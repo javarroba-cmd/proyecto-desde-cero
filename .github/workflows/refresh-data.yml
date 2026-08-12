@@ -1,0 +1,39 @@
+name: Actualizar datos y modelo
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # cada 6 horas
+  workflow_dispatch: {}      # permite lanzarlo a mano desde GitHub también
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Actualizar histórico de resultados
+        run: python scraping/build_historical_dataset.py
+
+      - name: Recalcular Elo
+        run: python features/build_elo_ratings.py
+
+      - name: Regenerar features
+        run: python features/build_features_real.py
+
+      - name: Entrenar y guardar el modelo
+        run: python cloud/train_and_save_model.py
+
+      - name: Guardar cambios en el repositorio
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "Actualización automática de datos y modelo"
+          git push
