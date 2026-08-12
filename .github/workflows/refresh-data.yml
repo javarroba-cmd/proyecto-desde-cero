@@ -30,17 +30,24 @@ jobs:
       - name: Entrenar y guardar el modelo
         run: python cloud/train_and_save_model.py
 
+      - name: Guardar histórico y modelo
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data/matches_real_history.csv data/matches_with_elo.csv data/features_real.csv data/model.joblib
+          git diff --cached --quiet || git commit -m "Actualización de histórico y modelo"
+          git pull --rebase --autostash
+          git push
+
       - name: Enviar informe a Telegram
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python cloud/send_report.py
 
-      - name: Guardar cambios en el repositorio
+      - name: Guardar resultado de la reconciliación
         run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add data/
-          git diff --cached --quiet || git commit -m "Actualización automática de datos y modelo"
+          git add data/signals_log.csv data/profit_chart_cloud.png
+          git diff --cached --quiet || git commit -m "Reconciliación de señales"
           git pull --rebase --autostash
           git push
