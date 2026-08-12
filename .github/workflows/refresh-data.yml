@@ -30,6 +30,12 @@ jobs:
       - name: Entrenar y guardar el modelo
         run: python cloud/train_and_save_model.py
 
+      - name: Enviar informe a Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python cloud/send_report.py
+
       - name: Guardar cambios en el repositorio
         run: |
           git config user.name "github-actions"
