@@ -38,6 +38,15 @@ TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 EDGE_THRESHOLD = 0.03
 MIN_MINUTES_BEFORE_START = 0  # ajusta libremente, igual que en signal_generator.py
 MADRID_TZ = ZoneInfo("Europe/Madrid")
+
+# PAUSADO (14/08/2026): el análisis mostró que el mercado predice mejor que
+# el modelo justo en los casos donde discrepan (edge alto) - AUC 0.61 del
+# mercado vs 0.56 del modelo, sobre las 312 señales reales generadas hasta
+# ahora. La generación de señales queda en pausa mientras se investiga más
+# (variables nuevas, modelo híbrido con más datos, etc.), pero el registro
+# de cuotas de mercado SIGUE ACTIVO más abajo, para seguir acumulando datos
+# de investigación sin interrupción.
+SIGNAL_GENERATION_PAUSED = True
 CODERE_DATE_RE = re.compile(r"/Date\((\d+)\)/")
 
 ODDS_FIELDNAMES = [
@@ -116,6 +125,9 @@ def main():
 
     for event in events:
         odds_rows.extend(flatten_event_odds(event, snapshot_time))
+
+        if SIGNAL_GENERATION_PAUSED:
+            continue  # seguimos registrando cuotas (arriba), pero no generamos señales
 
         node_id = str(event.get("NodeId"))
         full_home = event.get("ParticipantHome", "")
@@ -212,6 +224,9 @@ def main():
 
     print(f"\nPartidos vistos: {len(events)} | filas de cuotas guardadas: {len(odds_rows)} | "
           f"señales nuevas: {len(signal_rows)}")
+    if SIGNAL_GENERATION_PAUSED:
+        print("⏸ Generación de señales PAUSADA (SIGNAL_GENERATION_PAUSED=True) - "
+              "solo se están registrando cuotas de mercado.")
 
 
 if __name__ == "__main__":
