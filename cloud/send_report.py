@@ -9,6 +9,8 @@ versión local, este script NO vuelve a descargar el histórico él mismo (ya
 está fresco por el paso anterior del mismo workflow).
 """
 import os
+import re
+import csv
 import requests
 import pandas as pd
 import matplotlib
@@ -20,9 +22,58 @@ from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 TIME_TOLERANCE_MINUTES = 90
+_CLV_PLAYER_RE = re.compile(r"^(.*?)\s*\(([^()]*)\)\s*$")
 
 TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
+
+
+def load_closing_odds() -> dict:
+    """Lee data/codere_odds_log.csv (tolerando su mezcla de formatos de 15
+    y 20 columnas) y devuelve, para cada (node_id, jugador), la ÚLTIMA
+    cuota vista - aproximación de la cuota de CIERRE."""
+    path = DATA_DIR / "codere_odds_log.csv"
+    if not path.exists():
+        return {}
+
+    cols_20 = ["snapshot_time", "node_id", "league_name", "is_live", "team_home", "player_home",
+               "team_away", "player_away", "participant_home", "participant_away", "period_name",
+               "result_home", "result_away", "start_date_formatted", "game_type_id", "game_type_name",
+               "market_line", "outcome_name", "odd", "is_locked"]
+    cols_15 = ["snapshot_time", "node_id", "league_name", "participant_home", "participant_away",
+               "period_name", "result_home", "result_away", "start_date_formatted", "game_type_id",
+               "game_type_name", "market_line", "outcome_name", "odd", "is_locked"]
+
+    latest = {}
+    with open(path, newline="", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        next(reader, None)
+        for row in reader:
+            if len(row) == 20:
+                cols = cols_20
+            elif len(row) == 15:
+                cols = cols_15
+            else:
+                continue
+            d = dict(zip(cols, row))
+            if d.get("game_type_id") != "97":
+                continue
+            key = (d["node_id"], d["outcome_name"])
+            t = d["snapshot_time"]
+            if key not in latest or t > latest[key][0]:
+                latest[key] = (t, d["odd"])
+
+    result = {}
+    for (node_id, outcome_name), (_, odd) in latest.items():
+        m = _CLV_PLAYER_RE.match(outcome_name)
+        player = m.group(2).strip() if m else None
+        if player is None:
+            continue
+        try:
+            result[(node_id, player)] = float(odd)
+        except ValueError:
+            continue
+    return result
 
 
 def build_profit_chart(checked_df: pd.DataFrame, out_path: Path) -> Path:
@@ -170,6 +221,25 @@ def main():
     checked["profit"] = checked.apply(profit, axis=1)
     checked["stake"] = 1.0
 
+    def get_picked_player(row):
+        return row["player_a"] if row["bet_side"] == "home" else row["player_b"]
+    checked["picked_player"] = checked.apply(get_picked_player, axis=1)
+
+    closing_odds_map = load_closing_odds()
+    checked["closing_odds"] = checked.apply(
+        lambda r: closing_odds_map.get((str(r["node_id"]), r["picked_player"])), axis=1
+    )
+    clv_available = checked.dropna(subset=["closing_odds"]).copy()
+    if len(clv_available) > 0:
+        clv_available["clv_pct"] = (
+            (clv_available["odds_used"] - clv_available["closing_odds"]) / clv_available["closing_odds"] * 100
+        )
+        clv_mean = clv_available["clv_pct"].mean()
+        clv_positive_pct = (clv_available["clv_pct"] > 0).mean() * 100
+        n_clv = len(clv_available)
+    else:
+        clv_mean, clv_positive_pct, n_clv = None, None, 0
+
     n_bets = len(checked)
     n_wins = int(checked["was_correct"].sum())
     n_losses = n_bets - n_wins
@@ -200,7 +270,8 @@ def main():
         f"Unidades ganadas: {units_won:.2f}\n"
         f"Beneficio medio: {avg_profit:.4f}\n"
         f"ROI (%): {roi_pct:.2f}\n"
-        f"Sugerencias x día (aprox.): {señales_por_dia:.1f}"
+        + (f"CLV medio (%): {clv_mean:+.2f} (n={n_clv})\n% señales con CLV positivo: {clv_positive_pct:.1f}%\n" if n_clv > 0 else "")
+        + f"Sugerencias x día (aprox.): {señales_por_dia:.1f}"
     )
     if n_bets < 100:
         report_text += "\n\n⚠ Muestra pequeña (&lt;100 señales), no saques conclusiones todavía."
