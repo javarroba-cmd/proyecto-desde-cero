@@ -6,10 +6,17 @@ cron-job.org). Cada ejecución:
 1. Carga el modelo YA ENTRENADO (data/model.joblib) - no reentrena.
 2. Consulta la liga GG League en Codere UNA vez.
 3. Registra las cuotas vistas (como hacía poll_odds_live.py).
-4. Genera señales si detecta edge en algún partido pre-partido (como hacía
-   signal_generator.py), evitando repetir señales ya enviadas antes
-   (usando signals_log.csv como memoria persistente entre ejecuciones,
-   en vez de una lista en memoria que se perdía al reiniciar).
+4. Para partidos pre-partido con edge>umbral, mira el HISTORIAL de cuotas
+   de ese partido concreto (codere_odds_log.csv) y calcula cuánto se ha
+   movido la cuota del lado elegido desde la primera vez que se vio hasta
+   ahora. Solo genera señal si, ADEMÁS del edge, la cuota NO ha empeorado
+   (el mercado no se ha alejado de ese pick) - validado con datos reales:
+   con la cuota mejorando, 57.0% de acierto (IC95% [49.4, 64.6]); con la
+   cuota empeorando, solo 21.3% (IC95% [14.7, 28.7]), sobre 308 señales.
+   Si un partido aún no tiene suficiente historial de cuotas (solo lo
+   hemos visto una vez), se pospone la decisión al siguiente ciclo, no se
+   descarta - evitando repetir señales ya enviadas (signals_log.csv como
+   memoria persistente entre ejecuciones).
 """
 import os
 import re
@@ -39,14 +46,14 @@ EDGE_THRESHOLD = 0.03
 MIN_MINUTES_BEFORE_START = 0  # ajusta libremente, igual que en signal_generator.py
 MADRID_TZ = ZoneInfo("Europe/Madrid")
 
-# PAUSADO (14/08/2026): el análisis mostró que el mercado predice mejor que
-# el modelo justo en los casos donde discrepan (edge alto) - AUC 0.61 del
-# mercado vs 0.56 del modelo, sobre las 312 señales reales generadas hasta
-# ahora. La generación de señales queda en pausa mientras se investiga más
-# (variables nuevas, modelo híbrido con más datos, etc.), pero el registro
-# de cuotas de mercado SIGUE ACTIVO más abajo, para seguir acumulando datos
-# de investigación sin interrupción.
-SIGNAL_GENERATION_PAUSED = True
+# REACTIVADO (14/08/2026) con la nueva lógica de movimiento de cuota. Sigue
+# siendo shadow mode (no apuesta dinero real), así que reactivar para
+# probar esta versión mejorada en vivo es coherente con la metodología del
+# proyecto (hipótesis -> shadow -> decisión). Si quieres volver a pausar
+# la generación de señales sin tocar nada más, pon esto en True.
+SIGNAL_GENERATION_PAUSED = False
+
+MIN_SNAPSHOTS_REQUIRED = 2  # nº mínimo de capturas de cuota antes de poder decidir
 CODERE_DATE_RE = re.compile(r"/Date\((\d+)\)/")
 
 ODDS_FIELDNAMES = [
@@ -57,11 +64,19 @@ ODDS_FIELDNAMES = [
     "game_type_id", "game_type_name", "market_line", "outcome_name",
     "odd", "is_locked",
 ]
+# Columnas "antiguas" (15) que puede haber en la parte más vieja del CSV,
+# de antes de que añadiéramos is_live/team_home/etc. Leemos ambos formatos
+# para no perder historial al calcular movimientos.
+ODDS_FIELDNAMES_LEGACY = [
+    "snapshot_time", "node_id", "league_name", "participant_home", "participant_away",
+    "period_name", "result_home", "result_away", "start_date_formatted", "game_type_id",
+    "game_type_name", "market_line", "outcome_name", "odd", "is_locked",
+]
 
 SIGNAL_FIELDNAMES = [
     "signal_time", "node_id", "player_a", "player_b",
     "odds_a", "odds_b", "model_prob_a", "market_prob_a", "edge",
-    "bet_side", "start_date_formatted",
+    "bet_side", "odd_change_pct", "start_date_formatted",
     "result_checked", "target_win_a", "was_correct",
 ]
 
@@ -74,6 +89,43 @@ def parse_codere_date(value):
         return None
     ms = int(m.group(1))
     return datetime.fromtimestamp(ms / 1000, tz=timezone.utc).astimezone(MADRID_TZ)
+
+
+def load_odds_history() -> dict:
+    """Lee codere_odds_log.csv (tolerando la mezcla de formatos de 15 y 20
+    columnas que puede tener el archivo) y devuelve, para cada (node_id,
+    outcome_name), la lista de cuotas vistas en orden cronológico.
+    Devuelve un dict: {(node_id, outcome_name): [odd1, odd2, ...]}"""
+    path = DATA_DIR / "codere_odds_log.csv"
+    history = {}
+    if not path.exists():
+        return history
+
+    with open(path, newline="", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        next(reader, None)  # saltar cabecera (puede estar desactualizada)
+        for row in reader:
+            if len(row) == 20:
+                cols = ODDS_FIELDNAMES
+            elif len(row) == 15:
+                cols = ODDS_FIELDNAMES_LEGACY
+            else:
+                continue  # fila corrupta (nombre con coma sin escapar), se ignora
+            d = dict(zip(cols, row))
+            if d.get("game_type_id") != "97":
+                continue
+            key = (d["node_id"], d["outcome_name"])
+            history.setdefault(key, []).append((d["snapshot_time"], d["odd"]))
+
+    # ordenar cronológicamente y quedarnos solo con la lista de cuotas
+    result = {}
+    for key, entries in history.items():
+        entries.sort(key=lambda e: e[0])
+        try:
+            result[key] = [float(o) for _, o in entries]
+        except ValueError:
+            continue
+    return result
 
 
 def send_telegram_message(text: str):
@@ -116,12 +168,14 @@ def main():
 
     engine = LiveFeatureEngine()
     already_signaled = load_already_signaled()
+    odds_history = load_odds_history()
 
     events = get_gg_league_events()
     snapshot_time = datetime.now(timezone.utc).isoformat()
 
     odds_rows = []
     signal_rows = []
+    n_pending_movement = 0
 
     for event in events:
         odds_rows.extend(flatten_event_odds(event, snapshot_time))
@@ -185,9 +239,33 @@ def main():
         if bet_side is None:
             continue
 
-        already_signaled.add(node_id)
+        # FILTRO DE MOVIMIENTO DE CUOTA (añadido 14/08/2026, validado con
+        # 308 señales reales: cuota mejorando -> 57.0% acierto [IC95%
+        # 49.4-64.6]; cuota empeorando -> 21.3% [IC95% 14.7-28.7],
+        # intervalos sin solape). Miramos el historial de este partido en
+        # codere_odds_log.csv para el jugador elegido.
         full_pick = full_home if bet_side == "home" else full_away
         odds_pick = odds_home if bet_side == "home" else odds_away
+        key = (node_id, full_pick)
+        history = odds_history.get(key, [])
+
+        if len(history) < MIN_SNAPSHOTS_REQUIRED:
+            # Aún no hemos visto suficientes capturas de este partido para
+            # calcular el movimiento - NO lo descartamos, simplemente
+            # esperamos al siguiente ciclo (no se añade a already_signaled).
+            n_pending_movement += 1
+            continue
+
+        first_odd = history[0]
+        odd_change_pct = (odds_pick - first_odd) / first_odd * 100
+        if odd_change_pct > 0:
+            # La cuota ha empeorado desde que la vimos por primera vez
+            # (el mercado se ha alejado de este pick) - descartamos esta
+            # señal, aunque el edge parezca bueno.
+            already_signaled.add(node_id)  # no reintentar este partido
+            continue
+
+        already_signaled.add(node_id)
         fecha_str = match_start.strftime("%Y-%m-%d")
         hora_str = match_start.strftime("%H:%M:%S")
         torneo = event.get("LeagueName", "eBasketball")
@@ -201,6 +279,7 @@ def main():
             f"📅 <b>Fecha</b>: {fecha_str}\n"
             f"⏰ <b>Hora</b>: {hora_str} (España)\n"
             f"⏳ <b>Antelación</b>: {minutes_to_start:.0f} min antes del inicio\n"
+            f"📉 <b>Movimiento cuota</b>: {odd_change_pct:+.1f}% (mejorando)\n"
             f"────────────────────\n"
             f"Prob. modelo: {model_prob_home*100 if bet_side=='home' else (1-model_prob_home)*100:.1f}% | "
             f"Prob. mercado: {market_prob_home*100 if bet_side=='home' else (1-market_prob_home)*100:.1f}%\n"
@@ -214,7 +293,7 @@ def main():
             "node_id": node_id, "player_a": player_home, "player_b": player_away,
             "odds_a": odds_home, "odds_b": odds_away,
             "model_prob_a": model_prob_home, "market_prob_a": market_prob_home,
-            "edge": chosen_edge, "bet_side": bet_side,
+            "edge": chosen_edge, "bet_side": bet_side, "odd_change_pct": odd_change_pct,
             "start_date_formatted": event.get("StartDateFormatted"),
             "result_checked": False, "target_win_a": "", "was_correct": "",
         })
@@ -223,7 +302,7 @@ def main():
     append_csv(DATA_DIR / "signals_log.csv", SIGNAL_FIELDNAMES, signal_rows)
 
     print(f"\nPartidos vistos: {len(events)} | filas de cuotas guardadas: {len(odds_rows)} | "
-          f"señales nuevas: {len(signal_rows)}")
+          f"señales nuevas: {len(signal_rows)} | pendientes de más historial: {n_pending_movement}")
     if SIGNAL_GENERATION_PAUSED:
         print("⏸ Generación de señales PAUSADA (SIGNAL_GENERATION_PAUSED=True) - "
               "solo se están registrando cuotas de mercado.")
