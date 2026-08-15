@@ -291,6 +291,27 @@ def main():
 
     señales_por_dia = len(signals) / max(dias, 1)
 
+    # --- Desglose SOLO del sistema nuevo (con filtro de movimiento de cuota) ---
+    checked_new = checked.dropna(subset=["odd_change_pct"])
+    new_block = ""
+    if len(checked_new) > 0:
+        n_new = len(checked_new)
+        wr_new = checked_new["was_correct"].mean() * 100
+        roi_new = checked_new["profit"].mean() * 100
+        clv_new_available = checked_new.dropna(subset=["closing_odds"]) if "closing_odds" in checked_new else checked_new.iloc[0:0]
+        if len(clv_new_available) > 0:
+            clv_new_pct = ((clv_new_available["odds_used"] - clv_new_available["closing_odds"])
+                           / clv_new_available["closing_odds"] * 100)
+            clv_new_mean = clv_new_pct.mean()
+        else:
+            clv_new_mean = None
+        new_block = (
+            f"\n────────────────────\n"
+            f"📊 <b>SOLO sistema nuevo (filtro de movimiento)</b>\n"
+            f"n={n_new} | Acierto: {wr_new:.1f}% | ROI: {roi_new:+.1f}%"
+            + (f" | CLV: {clv_new_mean:+.1f}%" if clv_new_mean is not None else "")
+        )
+
     report_text = (
         f"🆕 <b>DESDE CERO (cloud)</b> · Informe de señales\n"
         f"────────────────────\n"
@@ -305,6 +326,7 @@ def main():
         f"ROI (%): {roi_pct:.2f}\n"
         + (f"CLV medio (%): {clv_mean:+.2f} (n={n_clv})\n% señales con CLV positivo: {clv_positive_pct:.1f}%\n" if n_clv > 0 else "")
         + f"Sugerencias x día (aprox.): {señales_por_dia:.1f}"
+        + new_block
     )
     if n_bets < 100:
         report_text += "\n\n⚠ Muestra pequeña (&lt;100 señales), no saques conclusiones todavía."
