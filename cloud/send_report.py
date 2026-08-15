@@ -144,6 +144,39 @@ def build_profit_chart(checked_df: pd.DataFrame, out_path: Path) -> Path:
     return out_path
 
 
+def load_signals_robust() -> pd.DataFrame:
+    """Lee data/signals_log.csv tolerando que algunas filas tengan un campo
+    de más (odd_change_pct) que la cabecera del archivo no incluye - ver la
+    misma explicación detallada en modeling/reconcile_signals.py."""
+    path = DATA_DIR / "signals_log.csv"
+    cols_old = ["signal_time", "node_id", "player_a", "player_b", "odds_a", "odds_b",
+                "model_prob_a", "market_prob_a", "edge", "bet_side", "start_date_formatted",
+                "result_checked", "target_win_a", "was_correct"]
+    cols_new = ["signal_time", "node_id", "player_a", "player_b", "odds_a", "odds_b",
+                "model_prob_a", "market_prob_a", "edge", "bet_side", "odd_change_pct",
+                "start_date_formatted", "result_checked", "target_win_a", "was_correct"]
+
+    rows = []
+    with open(path, newline="", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        next(reader, None)
+        for row in reader:
+            if len(row) == len(cols_new):
+                rows.append(dict(zip(cols_new, row)))
+            elif len(row) == len(cols_old):
+                d = dict(zip(cols_old, row))
+                d["odd_change_pct"] = ""
+                rows.append(d)
+
+    df = pd.DataFrame(rows, columns=cols_new)
+    for col in ["odds_a", "odds_b", "model_prob_a", "market_prob_a", "edge",
+                "target_win_a", "odd_change_pct"]:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+    df["result_checked"] = df["result_checked"].astype(str) == "True"
+    df["was_correct"] = df["was_correct"].map({"True": True, "False": False, "": None})
+    return df
+
+
 def send_telegram_message(text: str):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     resp = requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "HTML"}, timeout=10)
@@ -163,7 +196,7 @@ def send_telegram_photo(photo_path: Path, caption: str = ""):
 
 
 def main():
-    signals = pd.read_csv(DATA_DIR / "signals_log.csv")
+    signals = load_signals_robust()
     matches = pd.read_csv(DATA_DIR / "matches_real_history.csv")
 
     signals["signal_time"] = pd.to_datetime(signals["signal_time"], utc=True, errors="coerce", format="ISO8601")
