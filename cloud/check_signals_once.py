@@ -54,6 +54,11 @@ MADRID_TZ = ZoneInfo("Europe/Madrid")
 SIGNAL_GENERATION_PAUSED = False
 
 MIN_SNAPSHOTS_REQUIRED = 2  # nº mínimo de capturas de cuota antes de poder decidir
+MIN_OBSERVATION_MINUTES = 15  # tiempo MÍNIMO desde la 1ª captura hasta ahora,
+# para que la comparación se parezca más a "movimiento real hacia el cierre"
+# y menos a ruido de los primeros minutos (validado tras ver que el filtro
+# con solo 2 capturas rendía peor en vivo que en el análisis retrospectivo,
+# que comparaba contra la cuota de cierre real).
 CODERE_DATE_RE = re.compile(r"/Date\((\d+)\)/")
 
 ODDS_FIELDNAMES = [
@@ -94,8 +99,9 @@ def parse_codere_date(value):
 def load_odds_history() -> dict:
     """Lee codere_odds_log.csv (tolerando la mezcla de formatos de 15 y 20
     columnas que puede tener el archivo) y devuelve, para cada (node_id,
-    outcome_name), la lista de cuotas vistas en orden cronológico.
-    Devuelve un dict: {(node_id, outcome_name): [odd1, odd2, ...]}"""
+    outcome_name), el timestamp de la PRIMERA captura y la lista de cuotas
+    vistas en orden cronológico.
+    Devuelve un dict: {(node_id, outcome_name): (primer_timestamp, [odd1, odd2, ...])}"""
     path = DATA_DIR / "codere_odds_log.csv"
     history = {}
     if not path.exists():
@@ -117,14 +123,16 @@ def load_odds_history() -> dict:
             key = (d["node_id"], d["outcome_name"])
             history.setdefault(key, []).append((d["snapshot_time"], d["odd"]))
 
-    # ordenar cronológicamente y quedarnos solo con la lista de cuotas
+    # ordenar cronológicamente y quedarnos con el primer timestamp + lista de cuotas
     result = {}
     for key, entries in history.items():
         entries.sort(key=lambda e: e[0])
         try:
-            result[key] = [float(o) for _, o in entries]
+            odds_list = [float(o) for _, o in entries]
         except ValueError:
             continue
+        first_timestamp = entries[0][0]
+        result[key] = (first_timestamp, odds_list)
     return result
 
 
@@ -239,20 +247,35 @@ def main():
         if bet_side is None:
             continue
 
-        # FILTRO DE MOVIMIENTO DE CUOTA (añadido 14/08/2026, validado con
-        # 308 señales reales: cuota mejorando -> 57.0% acierto [IC95%
-        # 49.4-64.6]; cuota empeorando -> 21.3% [IC95% 14.7-28.7],
-        # intervalos sin solape). Miramos el historial de este partido en
-        # codere_odds_log.csv para el jugador elegido.
+        # FILTRO DE MOVIMIENTO DE CUOTA (añadido 14/08/2026, ajustado
+        # 15/08/2026 tras ver que con solo 2 capturas rendía peor en vivo
+        # -6.1% ROI- que en el análisis retrospectivo contra cuota de
+        # cierre -que sugería mucho más-). Ahora exigimos además un tiempo
+        # MÍNIMO de observación, no solo un mínimo de capturas, para que
+        # la comparación se parezca más a "movimiento real hacia el
+        # cierre" y menos a ruido de los primeros minutos.
         full_pick = full_home if bet_side == "home" else full_away
         odds_pick = odds_home if bet_side == "home" else odds_away
         key = (node_id, full_pick)
-        history = odds_history.get(key, [])
+        entry = odds_history.get(key)
+
+        if entry is None:
+            n_pending_movement += 1
+            continue
+        first_timestamp_str, history = entry
 
         if len(history) < MIN_SNAPSHOTS_REQUIRED:
-            # Aún no hemos visto suficientes capturas de este partido para
-            # calcular el movimiento - NO lo descartamos, simplemente
-            # esperamos al siguiente ciclo (no se añade a already_signaled).
+            n_pending_movement += 1
+            continue
+
+        first_seen_dt = datetime.fromisoformat(first_timestamp_str)
+        if first_seen_dt.tzinfo is None:
+            first_seen_dt = first_seen_dt.replace(tzinfo=timezone.utc)
+        minutes_observed = (datetime.now(timezone.utc) - first_seen_dt).total_seconds() / 60
+        if minutes_observed < MIN_OBSERVATION_MINUTES:
+            # Aún no ha pasado suficiente tiempo desde que vimos este
+            # partido por primera vez - esperamos al siguiente ciclo, NO
+            # lo descartamos (no se añade a already_signaled).
             n_pending_movement += 1
             continue
 
