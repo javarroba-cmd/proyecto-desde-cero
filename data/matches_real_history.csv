@@ -19427,3 +19427,66 @@ NB059310826,2026-08-31 05:15:00+00:00,False,New York Knicks,Los Angeles Lakers,S
 NB060310826,2026-08-31 05:19:00+00:00,False,Denver Nuggets,Orlando Magic,INVINCIBLE,RAPTOR,Ebasketball 4,Ebasketball H2H GG League,MATCH_ENDED,45.0,56.0
 NB061310826,2026-08-31 05:23:00+00:00,False,Denver Nuggets,Orlando Magic,UNDERTAKER,JETT,Ebasketball 5,Ebasketball H2H GG League,MATCH_ENDED,53.0,58.0
 NB062310826,2026-08-31 05:27:00+00:00,False,Cleveland Cavaliers,Phoenix Suns,SIGNAL,ACTION,Ebasketball 6,Ebasketball H2H GG League,MATCH_ENDED,46.0,42.0
+NB063310826,2026-08-31 05:55:00+00:00,False,Los Angeles Lakers,Boston Celtics,HOLLOW,JD,Ebasketball 1,Ebasketball H2H GG League,MATCH_ENDED,68.0,52.0
+NB064310826,2026-08-31 05:59:00+00:00,False,Miami Heat,Toronto Raptors,THUNDER,OUTLAW,Ebasketball 2,Ebasketball H2H GG League,MATCH_ENDED,58.0,69.0
+NB065310826,2026-08-31 06:03:00+00:00,False,Chicago Bulls,Miami Heat,AXE,PROWLER,Ebasketball 3,Ebasketball H2H GG League,MATCH_ENDED,50.0,58.0
+NB067310826,2026-08-31 06:11:00+00:00,False,Los Angeles Lakers,Boston Celtics,ARCHER,ORDER,Ebasketball 5,Ebasketball H2H GG League,MATCH_ENDED,43.0,46.0
+NB068310826,2026-08-31 06:15:00+00:00,False,Los Angeles Lakers,New York Knicks,ARCANE,BLOODHOUND,Ebasketball 6,Ebasketball H2H GG League,MATCH_ENDED,48.0,59.0
+NB069310826,2026-08-31 06:27:00+00:00,False,New York Knicks,Oklahoma City Thunder,RUTHLESS,DIMES,Ebasketball 1,Ebasketball H2H GG League,MATCH_ENDED,59.0,66.0
+NB070310826,2026-08-31 06:31:00+00:00,False,Chicago Bulls,Brooklyn Nets,COMBO,CARNAGE,Ebasketball 2,Ebasketball H2H GG League,MATCH_ENDED,68.0,73.0
+NB071310826,2026-08-31 06:35:00+00:00,False,Los Angeles Lakers,New York Knicks,SPECTER,HAWK,Ebasketball 3,Ebasketball H2H GG League,MATCH_ENDED,60.0,53.0
+NB072310826,2026-08-31 06:39:00+00:00,False,Charlotte Hornets,Denver Nuggets,ANSWER,MIST,Ebasketball 4,Ebasketball H2H GG League,MATCH_ENDED,58.0,75.0
+NB073310826,2026-08-31 06:43:00+00:00,False,Denver Nuggets,Orlando Magic,MARKSMAN,ORDER,Ebasketball 5,Ebasketball H2H GG League,MATCH_ENDED,58.0,52.0
+NB074310826,2026-08-31 06:47:00+00:00,False,Phoenix Suns,Cleveland Cavaliers,TORCH,TRANQUILITY,Ebasketball 6,Ebasketball H2H GG League,MATCH_ENDED,55.0,39.0
+NB075310826,2026-08-31 06:59:00+00:00,False,Oklahoma City Thunder,Boston Celtics,DIMES,JD,Ebasketball 1,Ebasketball H2H GG League,MATCH_ENDED,61.0,59.0
+NB076310826,2026-08-31 07:03:00+00:00,False,Brooklyn Nets,Toronto Raptors,CARNAGE,OUTLAW,Ebasketball 2,Ebasketball H2H GG League,MATCH_ENDED,55.0,59.0
+NB077310826,2026-08-31 07:07:00+00:00,False,Brooklyn Nets,Miami Heat,HAWK,PROWLER,Ebasketball 3,Ebasketball H2H GG League,MATCH_ENDED,45.0,57.0
+NB078310826,2026-08-31 07:11:00+00:00,False,Cleveland Cavaliers,Milwaukee Bucks,MIST,WARDEN,Ebasketball 4,Ebasketball H2H GG League,MATCH_ENDED,78.0,55.0
+NB079310826,2026-08-31 07:15:00+00:00,False,Boston Celtics,Los Angeles Lakers,ORDER,ARCHER,Ebasketball 5,Ebasketball H2H GG League,MATCH_ENDED,57.0,56.0
+NB080310826,2026-08-31 07:19:00+00:00,False,Boston Celtics,New York Knicks,TRANQUILITY,BLOODHOUND,Ebasketball 6,Ebasketball H2H GG League,MATCH_ENDED,39.0,51.0
+NB081310826,2026-08-31 07:31:00+00:00,False,New York Knicks,Los Angeles Lakers,RUTHLESS,HOLLOW,Ebasketball 1,Ebasketball H2H GG League,MATCH_ENDED,64.0,48.0
+NB082310826,2026-08-31 07:35:00+00:00,False,Chicago Bulls,Miami Heat,COMBO,THUNDER,Ebasketball 2,Ebasketball H2H GG League,MATCH_ENDED,75.0,74.0
+NB083310826,2026-08-31 07:39:00+00:00,False,Los Angeles Lakers,Boston Celtics,SPECTER,AXE,Ebasketball 3,Ebasketball H2H GG League,MATCH_ENDED,52.0,51.0
+NB265310826,2026-08-31 07:43:00+00:00,False,Denver Nuggets,Charlotte Hornets,MIST,ANSWER,Ebasketball 4,Ebasketball H2H GG League,MATCH_ENDED,61.0,43.0
+NB085310826,2026-08-31 07:47:00+00:00,False,Denver Nuggets,Dallas Mavericks,MARKSMAN,ARCHER,Ebasketball 5,Ebasketball H2H GG League,MATCH_ENDED,43.0,52.0
+NB086310826,2026-08-31 07:51:00+00:00,False,Phoenix Suns,Memphis Grizzlies,TORCH,ARCANE,Ebasketball 6,Ebasketball H2H GG League,MATCH_ENDED,81.0,56.0
+NB087310826,2026-08-31 08:03:00+00:00,False,New York Knicks,Boston Celtics,RUTHLESS,JD,Ebasketball 1,Ebasketball H2H GG League,MATCH_ENDED,66.0,61.0
+NB088310826,2026-08-31 08:07:00+00:00,False,Chicago Bulls,Toronto Raptors,COMBO,OUTLAW,Ebasketball 2,Ebasketball H2H GG League,MATCH_ENDED,74.0,53.0
+NB089310826,2026-08-31 08:11:00+00:00,False,Toronto Raptors,Miami Heat,SPECTER,PROWLER,Ebasketball 3,Ebasketball H2H GG League,MATCH_ENDED,57.0,51.0
+NB090310826,2026-08-31 08:15:00+00:00,False,Memphis Grizzlies,Milwaukee Bucks,ANSWER,WARDEN,Ebasketball 4,Ebasketball H2H GG League,MATCH_ENDED,53.0,45.0
+NB091310826,2026-08-31 08:19:00+00:00,False,New York Knicks,Boston Celtics,MARKSMAN,ORDER,Ebasketball 5,Ebasketball H2H GG League,MATCH_ENDED,51.0,47.0
+NB092310826,2026-08-31 08:23:00+00:00,False,Oklahoma City Thunder,New York Knicks,TORCH,BLOODHOUND,Ebasketball 6,Ebasketball H2H GG League,MATCH_ENDED,49.0,51.0
+NB093310826,2026-08-31 08:35:00+00:00,False,Oklahoma City Thunder,Los Angeles Lakers,DIMES,HOLLOW,Ebasketball 1,Ebasketball H2H GG League,MATCH_ENDED,47.0,51.0
+NB094310826,2026-08-31 08:39:00+00:00,False,Brooklyn Nets,Miami Heat,CARNAGE,THUNDER,Ebasketball 2,Ebasketball H2H GG League,MATCH_ENDED,75.0,62.0
+NB095310826,2026-08-31 08:43:00+00:00,False,New York Knicks,Boston Celtics,HAWK,AXE,Ebasketball 3,Ebasketball H2H GG League,MATCH_ENDED,55.0,57.0
+NB266310826,2026-08-31 08:47:00+00:00,False,Charlotte Hornets,Denver Nuggets,ANSWER,MIST,Ebasketball 4,Ebasketball H2H GG League,MATCH_ENDED,54.0,58.0
+NB097310826,2026-08-31 08:51:00+00:00,False,Dallas Mavericks,Denver Nuggets,ARCHER,MARKSMAN,Ebasketball 5,Ebasketball H2H GG League,MATCH_ENDED,56.0,55.0
+NB098310826,2026-08-31 08:55:00+00:00,False,Cleveland Cavaliers,Memphis Grizzlies,TRANQUILITY,ARCANE,Ebasketball 6,Ebasketball H2H GG League,MATCH_ENDED,44.0,41.0
+NB099310826,2026-08-31 09:07:00+00:00,False,Boston Celtics,Los Angeles Lakers,JD,HOLLOW,Ebasketball 1,Ebasketball H2H GG League,MATCH_ENDED,40.0,46.0
+NB100310826,2026-08-31 09:11:00+00:00,False,Toronto Raptors,Miami Heat,OUTLAW,THUNDER,Ebasketball 2,Ebasketball H2H GG League,MATCH_ENDED,64.0,65.0
+NB101310826,2026-08-31 09:15:00+00:00,False,Miami Heat,Chicago Bulls,PROWLER,AXE,Ebasketball 3,Ebasketball H2H GG League,MATCH_ENDED,51.0,43.0
+NB267310826,2026-08-31 09:19:00+00:00,False,Cleveland Cavaliers,Milwaukee Bucks,MIST,WARDEN,Ebasketball 4,Ebasketball H2H GG League,MATCH_ENDED,70.0,47.0
+NB103310826,2026-08-31 09:23:00+00:00,False,Boston Celtics,Los Angeles Lakers,ORDER,ARCHER,Ebasketball 5,Ebasketball H2H GG League,MATCH_ENDED,58.0,55.0
+NB104310826,2026-08-31 09:27:00+00:00,False,New York Knicks,Los Angeles Lakers,BLOODHOUND,ARCANE,Ebasketball 6,Ebasketball H2H GG League,MATCH_ENDED,40.0,47.0
+NB105310826,2026-08-31 09:39:00+00:00,False,Boston Celtics,Oklahoma City Thunder,JD,DIMES,Ebasketball 1,Ebasketball H2H GG League,MATCH_ENDED,76.0,81.0
+NB106310826,2026-08-31 09:43:00+00:00,False,Toronto Raptors,Brooklyn Nets,OUTLAW,CARNAGE,Ebasketball 2,Ebasketball H2H GG League,MATCH_ENDED,57.0,55.0
+NB107310826,2026-08-31 09:47:00+00:00,False,Oklahoma City Thunder,New York Knicks,PROWLER,HAWK,Ebasketball 3,Ebasketball H2H GG League,MATCH_ENDED,44.0,30.0
+NB108310826,2026-08-31 09:51:00+00:00,False,Dallas Mavericks,Denver Nuggets,WARDEN,MIST,Ebasketball 4,Ebasketball H2H GG League,MATCH_ENDED,61.0,57.0
+NB109310826,2026-08-31 09:55:00+00:00,False,Orlando Magic,Denver Nuggets,ORDER,MARKSMAN,Ebasketball 5,Ebasketball H2H GG League,MATCH_ENDED,53.0,59.0
+NB110310826,2026-08-31 09:59:00+00:00,False,Milwaukee Bucks,Cleveland Cavaliers,BLOODHOUND,TRANQUILITY,Ebasketball 6,Ebasketball H2H GG League,MATCH_ENDED,42.0,57.0
+NB111310826,2026-08-31 10:11:00+00:00,False,Los Angeles Lakers,New York Knicks,HOLLOW,RUTHLESS,Ebasketball 1,Ebasketball H2H GG League,MATCH_ENDED,75.0,67.0
+NB112310826,2026-08-31 10:15:00+00:00,False,Miami Heat,Chicago Bulls,THUNDER,COMBO,Ebasketball 2,Ebasketball H2H GG League,MATCH_ENDED,57.0,89.0
+NB113310826,2026-08-31 10:19:00+00:00,False,Chicago Bulls,Toronto Raptors,AXE,SPECTER,Ebasketball 3,Ebasketball H2H GG League,MATCH_ENDED,54.0,67.0
+NB268310826,2026-08-31 10:23:00+00:00,False,Milwaukee Bucks,Memphis Grizzlies,WARDEN,ANSWER,Ebasketball 4,Ebasketball H2H GG League,MATCH_ENDED,53.0,52.0
+NB115310826,2026-08-31 10:27:00+00:00,False,Los Angeles Lakers,New York Knicks,ARCHER,MARKSMAN,Ebasketball 5,Ebasketball H2H GG League,MATCH_ENDED,47.0,53.0
+NB116310826,2026-08-31 10:31:00+00:00,False,Los Angeles Lakers,Oklahoma City Thunder,ARCANE,TORCH,Ebasketball 6,Ebasketball H2H GG League,MATCH_ENDED,48.0,36.0
+NB117310826,2026-08-31 10:43:00+00:00,False,Boston Celtics,New York Knicks,JD,RUTHLESS,Ebasketball 1,Ebasketball H2H GG League,MATCH_ENDED,59.0,48.0
+NB118310826,2026-08-31 10:47:00+00:00,False,Toronto Raptors,Chicago Bulls,OUTLAW,COMBO,Ebasketball 2,Ebasketball H2H GG League,MATCH_ENDED,64.0,57.0
+NB119310826,2026-08-31 10:51:00+00:00,False,Oklahoma City Thunder,Los Angeles Lakers,PROWLER,SPECTER,Ebasketball 3,Ebasketball H2H GG League,MATCH_ENDED,44.0,47.0
+NB121310826,2026-08-31 10:59:00+00:00,False,Denver Nuggets,Orlando Magic,MARKSMAN,ORDER,Ebasketball 5,Ebasketball H2H GG League,MATCH_ENDED,45.0,47.0
+NB122310826,2026-08-31 11:03:00+00:00,False,Milwaukee Bucks,Phoenix Suns,BLOODHOUND,TORCH,Ebasketball 6,Ebasketball H2H GG League,MATCH_ENDED,64.0,61.0
+NB123310826,2026-08-31 11:15:00+00:00,False,Los Angeles Lakers,Oklahoma City Thunder,HOLLOW,DIMES,Ebasketball 1,Ebasketball H2H GG League,MATCH_ENDED,56.0,49.0
+NB124310826,2026-08-31 11:19:00+00:00,False,Miami Heat,Brooklyn Nets,THUNDER,CARNAGE,Ebasketball 2,Ebasketball H2H GG League,MATCH_ENDED,74.0,66.0
+NB125310826,2026-08-31 11:23:00+00:00,False,Chicago Bulls,Brooklyn Nets,AXE,HAWK,Ebasketball 3,Ebasketball H2H GG League,MATCH_ENDED,38.0,54.0
+NB127310826,2026-08-31 11:31:00+00:00,False,Los Angeles Lakers,Boston Celtics,ARCHER,ORDER,Ebasketball 5,Ebasketball H2H GG League,MATCH_ENDED,37.0,51.0
+NB128310826,2026-08-31 11:35:00+00:00,False,Los Angeles Lakers,Boston Celtics,ARCANE,TRANQUILITY,Ebasketball 6,Ebasketball H2H GG League,MATCH_ENDED,52.0,51.0
